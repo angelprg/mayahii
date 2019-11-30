@@ -13,9 +13,9 @@ const combina = (input, rama = "") => {
   if (input[0] === "0") {
     return rama;
   }
-  if (rama.length > 10) return 0; // N no puede ser mayor que 10, por ello tampoco los movimientos.
-  const giroIzq = combina(girar(input, parseInt(input[0]) * -1), `${rama}1`);
-  const giroDer = combina(girar(input, parseInt(input[0])), `${rama}2`);
+  if (rama.length > 10) return 0; // N no puede ser mayor que 10, entonces ese el máximo de movimientos.
+  const giroIzq = combina(girar(input, parseInt(input[0]) * -1), `${rama}2`);
+  const giroDer = combina(girar(input, parseInt(input[0])), `${rama}1`);
 
   //Se va eligiendo la rama de menor longitud, o se devuelve cero
   if (giroDer && giroIzq)
@@ -27,32 +27,43 @@ const combina = (input, rama = "") => {
 
 async function readFile(path) {
   return new Promise((resolve, reject) => {
-    fs.readFile(path, "utf8", function(err, data) {
+    fs.readFile(path, "utf8", (err, data) => {
       if (err) reject(err);
       resolve(data);
     });
   });
 }
 //Función para escribir el archivo destino
-async function writeFile(path) {}
+async function writeFile(path, data) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(path, data, err => {
+      if (err) reject(err);
+      resolve();
+    });
+  });
+}
 
 //Función principal
 const main = async () => {
   try {
     data = await readFile(path.join(__dirname, "ccf.ent"));
   } catch (error) {
-    console.log("Error al leer el archivo", error);
     return;
   }
   let data_array = data.toLocaleString().split("");
-  console.log(data_array);
   const movs = combina(data_array, "")
     .replace(/1/g, "0")
     .replace(/2/g, "1");
-  // En la función se utilizan 1 y 2 los giros, para facilitar comparaciones.
-  // Al final se convierten a 0 y 1
-
-  console.log(movs);
+  // En la función se utilizan 1 y 2 para los giros, para facilitar comparaciones.
+  // Al final se convierten a 0 y 1 como se requiere
+  try {
+    await writeFile(
+      path.join(__dirname, "ccf.sal"),
+      `${movs.length}\r\n${movs}`
+    );
+  } catch (error) {
+    return;
+  }
 };
 
 main();
